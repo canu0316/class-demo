@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MY WORKPLACE</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航栏 -->
+        <div class="nav-header">
+            <div class="nav-title">
+                <h1>CANY'S WORKPLACE</h1>
+            </div>
+            <div class="nav-buttons">
+                <button id="notebook-btn" class="nav-btn active">NOTEBOOK</button>
+                <button id="todo-btn" class="nav-btn">TODO</button>
+                <button id="pomodoro-btn" class="nav-btn">POMODORO</button>
+                <button id="project-overview-btn" class="nav-btn">PROJECT OVERVIEW</button>
+            </div>
+        </div>
+        
+        <!-- 主要内容区域 -->
+        <div class="main-content">
+            <!-- Notebook视图 -->
+            <div id="notebook-view" class="notebook-view">
+                <!-- 左侧栏：文件夹和笔记列表 -->
+        <div id="sidebar-column" class="column">
+            <div class="sidebar-header">
+                <h2> Service Platform  </h2>
+            </div>
+            <div class="tags-container">
+                <!-- 标签将在这里动态生成 -->
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="搜索笔记..." class="search-input">
+                <button id="clear-search-btn" class="clear-search-btn">×</button>
+            </div>
+            <div id="folders-list">
+                <!-- 文件夹列表将在这里动态生成 -->
+            </div>
+            <div class="sidebar-footer">
+                <button id="new-note-btn" class="btn primary">+ NEW NOTE</button>
+            </div>
+        </div>
+
+        <!-- 左侧拖拽分隔条 -->
+        <div class="resize-handle" id="left-resize-handle"></div>
+
+        <!-- 中间栏：笔记内容编辑 -->
+        <div id="editor-column" class="column">
+            <div class="editor-header">
+                <input type="text" id="note-title" placeholder="笔记标题..." class="title-input">
+                <input type="text" id="note-tag" placeholder="标签..." class="tag-input">
+            </div>
+            <div class="editor-content">
+                <textarea id="note-content" placeholder="开始写作..."></textarea>
+                <button id="delete-note-btn" class="btn danger">DELETE</button>
+            </div>
+            <div class="editor-footer">
+                <span id="save-status">SAVED</span>
+            </div>
+        </div>
+
+        <!-- 右侧拖拽分隔条 -->
+        <div class="resize-handle" id="right-resize-handle"></div>
+
+        <!-- 右侧栏：AI功能面板 -->
+        <div id="ai-panel-column" class="column">
+            <div class="ai-panel-header">
+                <h3>AI HELP</h3>
+            </div>
+            <div class="ai-panel-content">
+                <!-- 设置面板 -->
+                <div id="settings-panel" style="display: none;">
+                    <div class="settings-header">
+                        <h4>settings</h4>
+                        <button id="close-settings-btn" class="btn">关闭</button>
+                    </div>
+                    <div id="api-config-section" class="ai-section">
+                        <h4>🔑 API配置</h4>
+                        <div id="api-status">
+                            <p id="api-status-text">正在检查API配置...</p>
+                            <button id="config-api-btn" class="btn primary" style="display: none;">配置API</button>
+                        </div>
+                        <div id="api-form" style="display: none; margin-top: 10px;">
+                            <input type="password" id="api-key-input" placeholder="输入OpenRouter API密钥" class="api-input" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #d2d2d7; border-radius: 4px;">
+                            <button id="save-api-btn" class="btn primary" style="width: 100%;">保存API密钥</button>
+                            <button id="cancel-api-btn" class="btn" style="width: 100%; margin-top: 5px;">取消</button>
+                        </div>
+                        <div id="api-loading" style="display: none; text-align: center; padding: 20px;">
+                            <small>正在验证API密钥...</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="ai-features" style="display: none;">
+                    <div class="ai-section">
+                        <h4>生成标题</h4>
+                        <button id="generate-title-btn" class="btn">生成标题</button>
+                    </div>
+                    <div class="ai-section">
+                        <h4>润色内容</h4>
+                        <button id="polish-content-btn" class="btn">润色内容</button>
+                    </div>
+                    <div class="ai-section">
+                        <div id="ai-suggestions" style="display: none; padding: 10px; background-color: #f0f8ff; border-radius: 8px; margin-top: 10px; font-size: 12px; color: #333;"></div>
+                    </div>
+                </div>
+                
+                <!-- 日历组件 -->
+                <div class="ai-section">
+                    <h4>📅 日历</h4>
+                    <div id="calendar-container">
+                        <div class="calendar-header">
+                            <button id="prev-month" class="calendar-nav-btn">‹</button>
+                            <span id="current-month-year"></span>
+                            <button id="next-month" class="calendar-nav-btn">›</button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">日</div>
+                                <div class="weekday">一</div>
+                                <div class="weekday">二</div>
+                                <div class="weekday">三</div>
+                                <div class="weekday">四</div>
+                                <div class="weekday">五</div>
+                                <div class="weekday">六</div>
+                            </div>
+                            <div id="calendar-days" class="calendar-days">
+                                <!-- 日期将在这里动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ai-panel-footer">
+                <button id="settings-btn" class="btn">⚙️</button>
+            </div>
+        </div>
+        </div> <!-- 结束 notebook-view -->
+
+        <!-- TODO界面 -->
+        <div id="todo-view" class="todo-container" style="display: none;">
+            <div class="todo-sidebar">
+                <div class="todo-header">
+                    <h2>TODO LIST</h2>
+                    <button id="new-todo-btn" class="btn primary">+ NEW TODO</button>
+                </div>
+                <div id="todo-list" class="todo-list">
+                    <!-- TODO项目将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <!-- TODO左侧拖拽分隔条 -->
+            <div class="resize-handle todo-resize-handle" id="todo-left-resize-handle"></div>
+            
+            <div class="todo-main">
+                <div class="todo-editor">
+                    <input type="text" id="todo-title" placeholder="任务标题..." class="todo-title-input">
+                    <textarea id="todo-description" placeholder="任务描述..."></textarea>
+                    <div class="todo-controls">
+                        <select id="todo-priority" class="todo-select">
+                            <option value="high">P0</option>
+                            <option value="p1">P1</option>
+                            <option value="medium">P2</option>
+                            <option value="low">P3</option>
+                        </select>
+                        <button id="save-todo-btn" class="btn primary">保存</button>
+                        <button id="delete-todo-btn" class="btn danger">删除</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- TODO右侧拖拽分隔条 -->
+            <div class="resize-handle todo-resize-handle" id="todo-right-resize-handle"></div>
+            
+            <!-- TODO右侧栏：日历 -->
+            <div class="todo-calendar-panel">
+                <div class="todo-calendar-header">
+                    <h3>📅 日历</h3>
+                </div>
+                <div class="todo-calendar-content">
+                    <div id="todo-calendar-container">
+                        <div class="calendar-header">
+                            <button id="todo-prev-month" class="calendar-nav-btn">‹</button>
+                            <span id="todo-current-month-year"></span>
+                            <button id="todo-next-month" class="calendar-nav-btn">›</button>
+                        </div>
+                        <div class="calendar-grid">
+                            <div class="calendar-weekdays">
+                                <div class="weekday">日</div>
+                                <div class="weekday">一</div>
+                                <div class="weekday">二</div>
+                                <div class="weekday">三</div>
+                                <div class="weekday">四</div>
+                                <div class="weekday">五</div>
+                                <div class="weekday">六</div>
+                            </div>
+                            <div id="todo-calendar-days" class="calendar-days">
+                                <!-- 日期将在这里动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- POMODORO界面 -->
+        <div id="pomodoro-view" class="pomodoro-container" style="display: none;">
+            <div class="pomodoro-sidebar">
+                <div class="task-section">
+                    <div class="task-header">
+                        <h3>今日任务</h3>
+                        <button id="add-task-btn" class="add-task-btn" onclick="console.log('HTML onclick triggered'); createNewPomodoroTask();">+</button>
+                    </div>
+                    <div class="task-input-container" id="task-input-container" style="display: none;">
+                        <input type="text" id="new-task-input" placeholder="输入任务..." class="task-input">
+                        <div class="task-input-actions">
+                            <button id="save-task-btn" class="task-action-btn save">保存</button>
+                            <button id="cancel-task-btn" class="task-action-btn cancel">取消</button>
+                        </div>
+                    </div>
+                    <div id="task-list" class="task-list">
+                        <!-- 任务列表将在这里动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="history-section">
+                    <div class="history-header">
+                        <h3>历史记录</h3>
+                    </div>
+                    <div id="history-list" class="history-list">
+                        <!-- 历史记录将在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="pomodoro-main">
+                <div class="pomodoro-header">
+
+                </div>
+                
+                <div class="pomodoro-timer-section">
+                    <div class="timer-display">
+                        <div class="timer-circle">
+                            <svg class="timer-svg" width="280" height="280" viewBox="0 0 280 280">
+                                <!-- 番茄时钟外圈 -->
+                                <circle class="tomato-outer" cx="140" cy="150" r="80" fill="#ff6b6b" stroke="#ff4757" stroke-width="3"/>
+                                
+                                <!-- 时钟表盘 -->
+                                <circle class="clock-face" cx="140" cy="150" r="55" fill="#fff5f5" stroke="#ff4757" stroke-width="2"/>
+                                
+                                <!-- 番茄进度填充 -->
+                                <defs>
+                                    <clipPath id="tomato-clip">
+                                        <circle cx="140" cy="150" r="80"/>
+                                    </clipPath>
+                                </defs>
+                                <rect class="timer-progress-fill" x="60" y="230" width="160" height="0" fill="#ff4757" clip-path="url(#tomato-clip)"/>
+                                
+                                <!-- 时钟刻度 -->
+                                <g class="clock-marks">
+                                    <!-- 12点 -->
+                                    <line x1="140" y1="100" x2="140" y2="110" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                    <!-- 3点 -->
+                                    <line x1="190" y1="150" x2="180" y2="150" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                    <!-- 6点 -->
+                                    <line x1="140" y1="200" x2="140" y2="190" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                    <!-- 9点 -->
+                                    <line x1="90" y1="150" x2="100" y2="150" stroke="#333" stroke-width="3" stroke-linecap="round"/>
+                                </g>
+                                
+                                <!-- 时针分针 -->
+                                <g class="clock-hands">
+                                    <!-- 时针 -->
+                                    <line class="hour-hand" x1="140" y1="150" x2="140" y2="125" stroke="#333" stroke-width="4" stroke-linecap="round"/>
+                                    <!-- 分针 -->
+                                    <line class="minute-hand" x1="140" y1="150" x2="165" y2="135" stroke="#ff4757" stroke-width="3" stroke-linecap="round"/>
+                                </g>
+                                
+                                <!-- 时钟中心点 -->
+                                <circle cx="140" cy="150" r="4" fill="#333"/>
+                                
+                                <!-- 番茄叶子装饰 -->
+                                <ellipse class="tomato-leaf" cx="140" cy="65" rx="15" ry="10" fill="#26d0ce" stroke="#1dd1a1" stroke-width="2"/>
+                            </svg>
+                        </div>
+                        <div class="timer-content">
+                            <div class="timer-time" id="pomodoro-timer">25:00</div>
+                            <div class="timer-label" id="pomodoro-status" class="pomodoro-status work">工作时间</div>
+                            <div class="session-info" id="pomodoro-session">第 1 个番茄钟</div>
+                        </div>
+                    </div>
+                    
+                    <div class="timer-controls">
+                        <button id="pomodoro-start" class="timer-btn primary">开始</button>
+                        <button id="pomodoro-pause" class="timer-btn secondary" style="display: none;">暂停</button>
+                        <button id="pomodoro-reset" class="timer-btn secondary">重置</button>
+                    </div>
+                </div>
+                
+
+            </div>
+
+        </div>
+        
+        <!-- 项目概览界面 -->
+        <div id="project-overview-view" class="project-overview-container" style="display: none;">
+            <div class="overview-filters">
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">All Projects</button>
+                    <button class="filter-btn" data-filter="active">Active</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                    <button class="filter-btn" data-filter="planning">Planning</button>
+                </div>
+                <button class="new-project-btn" id="new-project-overview-btn">+ New Project</button>
+            </div>
+            <div class="project-grid" id="project-overview-grid">
+                <!-- 项目卡片将在这里动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 项目详情界面 -->
+        <div id="project-detail-view" class="project-detail-container" style="display: none;">
+            <div class="project-detail-header">
+                <button id="back-to-overview-btn" class="btn secondary">← 返回概览</button>
+                <div class="project-detail-actions">
+                    <button id="save-project-detail-btn" class="btn primary">保存</button>
+                    <button id="delete-project-detail-btn" class="btn danger">删除项目</button>
+                </div>
+            </div>
+            
+            <div class="project-detail-content">
+                <div class="project-detail-info">
+                    <div class="project-detail-basic">
+                        <input type="text" id="project-detail-name" placeholder="项目名称..." class="project-name-input">
+                        <textarea id="project-detail-description" placeholder="项目描述..." class="project-description-textarea"></textarea>
+                    </div>
+                    
+                    <div class="project-detail-meta">
+                        <div class="meta-row">
+                            <label>状态:</label>
+                            <select id="project-detail-status" class="project-select">
+                                <option value="planning">Planning</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="onhold">On Hold</option>
+                            </select>
+                        </div>
+                        <div class="meta-row">
+                            <label>优先级:</label>
+                            <select id="project-detail-priority" class="project-select">
+                                <option value="low">Low</option>
+                                <option value="medium">Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </div>
+                        <div class="meta-row">
+                            <label>开始日期:</label>
+                            <input type="date" id="project-detail-start-date" class="project-date-input">
+                        </div>
+                        <div class="meta-row">
+                            <label>结束日期:</label>
+                            <input type="date" id="project-detail-end-date" class="project-date-input">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Trello风格看板 -->
+                <div class="project-detail-kanban">
+                    <div class="kanban-header">
+                        <h3>项目看板</h3>
+                        <button class="btn btn-primary add-task-btn" onclick="showTaskModal()">+ 添加任务</button>
+                    </div>
+                    
+                    <div class="kanban-board">
+                        <div class="kanban-column" data-status="todo">
+                            <div class="column-header">
+                                <h4>📋 待办事项</h4>
+                                <span class="task-count" id="detail-todo-count">0</span>
+                            </div>
+                            <div class="task-list" data-status="todo"></div>
+                            <button class="add-card-btn" onclick="showTaskModal('todo')">+ 添加卡片</button>
+                        </div>
+                        
+                        <div class="kanban-column" data-status="inprogress">
+                            <div class="column-header">
+                                <h4>🚀 进行中</h4>
+                                <span class="task-count" id="detail-inprogress-count">0</span>
+                            </div>
+                            <div class="task-list" data-status="inprogress"></div>
+                            <button class="add-card-btn" onclick="showTaskModal('inprogress')">+ 添加卡片</button>
+                        </div>
+                        
+                        <div class="kanban-column" data-status="done">
+                            <div class="column-header">
+                                <h4>✅ 已完成</h4>
+                                <span class="task-count" id="detail-done-count">0</span>
+                            </div>
+                            <div class="task-list" data-status="done"></div>
+                            <button class="add-card-btn" onclick="showTaskModal('done')">+ 添加卡片</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 项目统计 -->
+                <div class="project-detail-stats">
+                    <div class="stats-header">
+                        <h3>项目统计</h3>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number" id="detail-total-tasks">0</div>
+                            <div class="stat-label">总任务</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="detail-completed-tasks">0</div>
+                            <div class="stat-label">已完成</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="detail-progress-percent">0%</div>
+                            <div class="stat-label">完成度</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number" id="detail-days-left">-</div>
+                            <div class="stat-label">剩余天数</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 项目管理界面 -->
+        <div id="project-view" class="project-container" style="display: none;">
+            <div class="project-header">
+                <h2>项目看板</h2>
+                <button id="create-kanban-task-btn" class="btn primary" onclick="createNewKanbanTask()">+ 新建任务</button>
+            </div>
+            
+            <div class="kanban-board">
+                <div class="kanban-column" data-status="pending">
+                    <div class="column-header">
+                        <h3>📋 待办事项</h3>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div id="kanban-todo" class="kanban-tasks">
+                        <!-- 待办任务卡片将在这里动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="kanban-column" data-status="in_progress">
+                    <div class="column-header">
+                        <h3>🚀 进行中</h3>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div id="kanban-in-progress" class="kanban-tasks">
+                        <!-- 进行中任务卡片将在这里动态生成 -->
+                    </div>
+                </div>
+                
+                <div class="kanban-column" data-status="completed">
+                    <div class="column-header">
+                        <h3>✅ 已完成</h3>
+                        <span class="column-count">0</span>
+                    </div>
+                    <div id="kanban-done" class="kanban-tasks">
+                        <!-- 已完成任务卡片将在这里动态生成 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        </div> <!-- 关闭 main-content -->
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
